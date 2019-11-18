@@ -13,3 +13,4 @@ To play:
 Some TODO's:
 * !weblogging
 * deduplication of results
+* link to searchlogger firefox extension from a while ago
