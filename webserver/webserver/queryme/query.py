@@ -49,8 +49,8 @@ def query(q):
 #TODO character limit
 def firstSentence(fulltext, q):
 
-	lowlimit = 10
-	highlimit = 20
+	lowlimit = 20
+	highlimit = 40
 
 	# Find the first sentence with a whitespace (i.e. not a URL)
 	# and all query terms
@@ -67,11 +67,17 @@ def firstSentence(fulltext, q):
 			# we're going to return this sentence. return the keywords,
 			# the words in front and behind
 			splitsent = sentence.split(" ")
+			returnsent = ""
+			returnsentend = ""
 			for index, word in enumerate(splitsent):
 				if word == keywords[0]:
 					if index < lowlimit:
 						lowlimit = index
-					return ".. " + " ".join(splitsent[index - lowlimit:index + highlimit]) + " .."
+					else:
+						returnsent += ".. "
+					if not (len(splitsent) < index + highlimit):
+						returnsentend += " .."
+					return returnsent + " ".join(splitsent[index - lowlimit:index + highlimit]) + returnsentend
 				
 #		if (q.split(" ")[0] in sentence):
 #			return sentence
