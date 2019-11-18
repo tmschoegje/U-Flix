@@ -1,7 +1,7 @@
 # using the sites.json, we use the python bulk helper to index these files in elastic
 # https://elasticsearch-py.readthedocs.io/en/master/helpers.html
 
-# To use this: first install and start elastic (bin/elastic.bat)
+# Windows install: first install and start elastic (bin/elastic.bat)
 # Also pip install elasticsearch (for the python libraries)
 # Get sites.json from the spider, and then do this. Note: I hardcoded a link that should be changed
 
@@ -40,7 +40,7 @@ import json
 from time import sleep
 
 def gendata():
-	f = open("C:\\Users\\tmsch\\Desktop\\elastic\\sites.json")
+	f = open("C:\\Users\\tmsch\\Desktop\\werk\\uflix\\elastic\\sites.json")
 	fjson = json.load(f)
 
 	#for each item

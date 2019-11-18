@@ -1,4 +1,4 @@
-# File assumes
+# trying out search/morelikethis
 from elasticsearch import Elasticsearch
 es = Elasticsearch()
 

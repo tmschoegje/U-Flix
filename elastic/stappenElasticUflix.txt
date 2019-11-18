@@ -1,0 +1,60 @@
+
+
+Een paar typen recommendation zijn
+	Collaborative Filtering: kijk welke gebruikers vergelijkbaar zijn. Raad items aan die de ander leuk vond
+	Content-Based: Kijk welke items op ekaar lijken (bv zelfde onderwerp, type). Raad vergelijkbare items aan
+	Co-occurrence/Association Rule Mining: Kijk welke items vaak bekeken worden door dezelfde persoon. Als iemand anders de eerste kijkt, raad de tweede aan.
+	
+
+De vraag voor POC is content-based7 recommendation: raad een item aan dat over hetzelfde thema gaat. We kijken dus naar een document als een lijst van:
+[utrecht-monitor.nl/bevolking-bestuur/bevolking/stand-en-ontwikkeling, pagina titel, keywords, text content, [lijst van thema's]]
+
+We hebben 4 hoofdcategorien, die we verder kunnen onderverdelen naar 10 subcategorien. Ik zou bij elk document aangeven welk hoofdcategorie toepasbaar is (waarschijnlijk 1, misschien meer), en welke subcategorien van toepassing zijn (alle relevante). Bv:
+Een document over jongeren overlast 'JongerenOverlast.pdf' krijgt iig tags Sociale leefomgeving, Veiligheid
+
+
+
+Mogelijk stappenplan
+
+1. Index
+	1.1 Vind online/collega's een crawler voor Elastic/python
+	
+	1.2 Voer de crawler uit op een voorbeeld (www.utrecht-monitor.nl lijkt de makkelijkste) om een index op te bouwen
+	
+2.	Plan hoe de pagina's op de sites met een thema gaat taggen. Voor de POC willen we denk ik handmatig regels bepalen
+	om deze tags toe te kennen. Zou dus in een plaatje kunnen **
+
+	2.1 Ideaal is als we kunnen zeggen dat alle subpagina's van een bepaalde pagina onder een thema vallen. Bv:
+		utrecht-monitor.nl/bevolking-bestuur/* -> hoofdthema bevolking-bestuur
+		utrecht-monitor.nl/bevolking-bestuur/bevolking/* -> subthema bevolking, hoofdthema bevolking-bestuur
+		
+		Op deze site is er een 1 op 1 mapping, dat weten we niet van andere sites
+	2.2 Als een pagina deel van een thema-naam sleutelwoord heeft, dan valt het ook onder dit thema
+		We hadden al een voorbeeld met keywords, maar ik weet even niet welke. 
+		Stel utrecht-monitor.nl/bevolking-bestuur/bevolking/stand-en-ontwikkeling had de keyphrase 'bevolking utrecht',
+		geef dan de subthema 'bevolking'
+
+3.	Verrijk de index in Elastic met deze tags, zodat we iets krijgen zoals
+	[utrecht-monitor.nl/bevolking-bestuur/bevolking/stand-en-ontwikkeling, Stand en Ontwikkeling, "", "Samenvatting Utrecht groeit hard...", [Bevolking & bestuur, Bevolking]]
+
+4.	Test of we kunnen zoeken in de Elastic index, en of we kunnen filteren op (sub)thema
+
+5.	Kies andere sites om toe te voegen aan de POC. Kies op basis van hoe makkelijk deze sites zijn in te delen in thema's
+	(op basis van ervaring). Op basis van ervaring kunnen we inschatten welke sites makkelijker zijn om te doen. **
+
+6.	Recommendation doen. De makkelijkste aanpak is dat we zoeken, en dan bij elk resultaat een paar documenten aanraden.
+	De makkelijkste manier om aan te raden is Elastic's moreLikeThis(document) functie (het heet iets anders). Dan geven
+	we een zoekresultaat als parameter en krijgen documenten waarvan de tekst een beetje op het origineel iljkt. Deze
+	aangeraden documenten kunnen we filteren zodat er minstens 1 thema hetzelfde is als de thema's van het originele
+	document.
+	
+0.	In mijn ervaring is het moeilijk om data te krijgen, dus willen we alvast doorkijken naar het vervolg.
+	Als we een bedrijfje willen evalueren willen we ze een realistische/moeilijke dataset geven (veel items om tussen
+	te kiezen, het liefst met gebruikerslogs van hoe mensen ze bezoeken). 
+	> Houden we logs bij van site access? Kunnen we gebruikers over de verschillende sites tracken?
+	> Wat zou een logische uitbreiding zijn van deze use-case?
+	
+	
+** Voor deze stappen is het misschien handig om met de 'data owners' te praten. Het doel is om erachter te komen of er een makkelijke manier
+is om de site in te delen in de thema's. Je zou zelfs kunnen vragen of ze de thema's als keywords toe kunnen voegen!
+Dan is hun site voortaan beter te vinden, en is ons project een stuk simpeler

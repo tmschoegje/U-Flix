@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+		//var nameValue = document.getElementById("name").value;
+		//				console.log(nameValue);
+			$(document).ready(function(){
+				$("#continue").click(function(){
+					//console.log($("#uniqueID").elements["nameid"]);
+					$.ajax({
+						type: "GET",
+						url: "http://localhost:80",
+						data: {"on": false} // or {"on": true} 
+					}).done(function (data, textStatus, jqXHR) {
+						console.log(data);
+					});
+					
+					
+					//$.get("demo_test.asp", function(data, status){
+					//	alert("Data: " + data + "\nStatus: " + status);
+					//});
+				});
+			});
+			
+			
+			//highlight selected items, add to list of results to return
+			$(document).ready(function(){
+				$(".result").click(function(){
+					var state = $(this).attr("selectattr");
+					if(state === "true"){
+						$(this).attr("selectattr", "false");
+						$(this).attr("style","background-color:white")
+					}
+					else{
+						$(this).attr("selectattr", "true");
+						$(this).attr("style","background-color:salmon")
+					}
+				});
+			});
+			
+			
+		</script>
+		
+    </head>
+    <body>			
+		<div class="result" selectAttr="false">this is a search result</div>
+		<div class="result" selectAttr="false">this is a search result</div>
+		<div class="result" selectAttr="false">this is a search result</div>
+		<div class="result" selectAttr="false">this is a search result</div>
+		<div class="result" selectAttr="false">this is a search result</div>
+		
+		<div id="likert">
+			Overall evaluation:
+			<input type="radio" id="contactChoice1" name="contact" value="email">1 &nbsp;
+			<input type="radio" id="contactChoice1" name="contact" value="email">2 &nbsp;
+			<input type="radio" id="contactChoice1" name="contact" value="email">3 &nbsp;
+			<input type="radio" id="contactChoice1" name="contact" value="email">4 &nbsp;
+			<input type="radio" id="contactChoice1" name="contact" value="email">5 &nbsp;
+		</div>
+		<button id="continue">Click me</button>
+    </body>
+</html>

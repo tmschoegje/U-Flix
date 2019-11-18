@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+			/*$(document).ready(function(){
+				$("#continue").click(function(){
+				
+					$.post( "../../answer2", function( data ) {
+						
+						//$( ".result" ).html( data );
+						alert('hi');
+					});
+				
+				});
+			});*/
+			
+			
+			var clickedLikert = 0;
+				
+
+			$(document).ready(function(){
+				//formatting html
+				$('a').removeAttr("href");
+				
+				//indicate the type of doc it is!
+				{% if doctype == 'Debatresultaat' %}
+					$('.searchResultKeyword').attr('style','color:blue;font-weight: bold;')
+					$('.searchResultKeyword').html('Debatresultaat')
+				{% elif doctype == 'Besluit' %}
+					$('.searchResultKeyword').attr('style','color:green;font-weight: bold;')
+					$('.searchResultKeyword').html('Besluit')
+				{% elif doctype == 'Informerend' %}
+					$('.searchResultKeyword').attr('style','color:orange;font-weight: bold;')
+					$('.searchResultKeyword').html('Informerend')
+				{% else %}
+					$('#filtid').html('Filter: off')
+					$('.searchResultKeyword').attr('style','color:red;font-weight: bold;')
+					$('.searchResultKeyword').each(function(  ) {
+						var ht = $(this).html()
+						if(ht.includes("ommissie")){
+							$(this).attr('style','color:blue;font-weight: bold;')
+							$(this).html('Debatresultaat')
+						}
+						else if(ht.includes("raad") || ht.includes("agenuur") || ht.includes("voorstellen")){
+							$(this).attr('style','color:green;font-weight: bold;')
+							$(this).html('Besluit')
+						}
+						else if(ht.includes("informatie") || ht.includes("activiteiten")){
+							$(this).attr('style','color:orange;font-weight: bold;')
+							$(this).html('Informerend')
+						}
+					});
+					
+					
+					
+				{% endif %}
+				$('.searchResultDate').attr('style','color:#9b9b9b')
+				$('.searchResultListtype').attr('style','color:#337ab7')
+				//$('.searchResultKeyword').html('type')
+
+				$('li').each(function (index) {
+					$(this).attr('class','result')
+					$(this).attr('resultnum', index)
+					$(this).attr('selectAttr', 'False')
+				})
+			
+			
+				$(".result").click(function(){
+					//highlighting results clicked
+					var state = $(this).attr("selectAttr");
+					var resultId = $(this).attr("id");
+					if(state === "true"){
+						$(this).attr("selectAttr", "false");
+						$(this).attr("style","background-color:white")
+					}
+					else{
+						$(this).attr("selectAttr", "true");
+						$(this).attr("style","background-color:salmon")
+					}
+					
+					//updating the changed information
+					resTotal = 0;
+					resSelected = "";
+					$( ".result" ).each(function( index ) {
+						if($(this).attr("selectAttr") === "true") {
+							resTotal += 1;
+							resSelected += "1";
+						} else {
+							resSelected += "0";
+						}
+					});
+					$("#selected").attr("value",resSelected);
+					$("#selectedTotal").attr("value", resTotal);	
+				});
+				
+				$(".radio").click(function(){
+					clickedLikert = 1;
+				});
+			});
+			
+			function validateForm() {
+				if($("#selected").attr("value") === "-1"){
+					ensurance = confirm('No relevant results indicated. OK to continue, cancel to return.');
+					if(ensurance == false)
+						return false;
+				}
+				if(clickedLikert == 0){
+					alert('Please give an overall rating.')
+					return false;
+				}
+//				console.log($("#likert").attr("value"))
+//				if($("#selectedTotal").attr("value") == "-1")
+				return true;
+			}
+
+			
+			var seconds = 0;
+			setInterval(function () {
+				seconds++;
+				$("#timeSpent").attr("value", seconds);
+			}, 1000);
+			
+			//if we do a link to the next question: <li><a href="{ url 'uiquery:experiment' sessionId '/' question.id + 2 }">{{ Next }}</a></li>  ?
+
+		</script>
+		
+    </head>
+    <body>
+		<div><h1 style="color:salmon">
+			{{ question }}
+		</h1><div>
+		<h2 id="filtid">Filter: on</h2>
+		 <div> {% autoescape off %}
+			{{ results }} 
+			   {% endautoescape %}
+		 </div>
+		
+		<!-- where to link -->
+		<form onsubmit="return validateForm()" action="{% url 'uiquery:answer' sessionId randomId %}" method="post" >
+		{% csrf_token %}
+		
+		<input type="hidden" id="selected" name="selected" value="-1" />
+		<input type="hidden" id="selectedTotal" name="selectedTotal" value="-1" />
+		
+		<input type="hidden" id="timeSpent" name="timeSpent" value="-1" />
+		<div>
+			Overall evaluation:
+			<input class="radio" type="radio" id="contactChoice1" name="likert" value="1">1 &nbsp;
+			<input class="radio" type="radio" id="contactChoice1" name="likert" value="2">2 &nbsp;
+			<input class="radio" type="radio" id="contactChoice1" name="likert" value="3">3 &nbsp;
+			<input class="radio" type="radio" id="contactChoice1" name="likert" value="4">4 &nbsp;
+			<input class="radio" type="radio" id="contactChoice1" name="likert" value="5">5 &nbsp;
+		</div>
+		<input type="submit" value="Next" />
+		</form>
+		
+    </body>
+</html>

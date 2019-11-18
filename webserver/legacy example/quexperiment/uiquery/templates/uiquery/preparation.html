@@ -1,0 +1,23 @@
+Je krijgt de zoekvraag en resultaten te zien van een zoekmachine. Bij elke zoekvraag te zien en moet de resultaten aan klikken die je relevant vind voor deze vraag.
+Een deel van de tijd word een zoekfilter gebruikt in de hoop om meer relevante antwoorden te vinden.
+<br><br>
+Deze filters kijken naar de bron van de documenten: is het ontstaan uit een 
+<span style="color:orange">raadsinformatie-bijeenkomst</span>, een <span style="color:blue">raadscommissie</span> of de <span style="color:green">gemeenteraad</span>.
+<br><br>
+<span style="color:orange">raadsinformatie-bijeenkomst</span> documenten zijn <span style="color:orange">informerend</span> <br>
+<span style="color:blue">raadscommissie</span> documenten zijn het <span style="color:blue">overwogen</span> resultaat van een debat <br>
+<span style="color:green">gemeenteraad</span> documenten zijn vastgelegde <span style="color:green">besluiten</span>
+<br><br>
+Geef per zoekvraag aan welke resultaten je helpen om de vraag te beantwoorden, 
+en geef dan een algemene waarde aan hoe goed de vraag beantwoord is. 
+Druk dan volgende.
+<br><br>
+We gaan eerst oefenen met twee vragen; daarna zijn er zijn 24 zoekvragen in totaal.
+<br><br>
+{% load static %}
+<img src="{% static "uiquery/raad.png" %}" alt="My image"/>
+<br><br>
+<form action="{% url 'uiquery:experiment' sessionId 0 %}" method="post" >
+		{% csrf_token %}
+		<input type="submit" value="Next" />
+</form>
