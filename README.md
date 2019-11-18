@@ -6,7 +6,8 @@ To play:
 * Build Elastic index using the stuff in Elastic folder
 * Can inspect index using kibana, /bin/kibana.bat (windows)
 * Install Django, python manage.py runserver
-* Open interface
+* Disable the browser security feature to disable CORS
+* Open the /interface 
 * Find out and fix what lines I hardcoded because I was very very lazy
 
 Some TODO's:
