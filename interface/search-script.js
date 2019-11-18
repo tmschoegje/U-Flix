@@ -214,9 +214,70 @@ function SearchCompleted(response)
 	else if (_engine=="poc"){
 //		results = parsePoC(response.events, _keywords)
 		console.log('interpreting poc')
-		html = "got here"
+		html = ""
+		results = response.results
 		
-		$("#output").html(html)
+		if (results.numresults === 0)
+		{
+			$("#searchResult").html("No matching pages found");
+			return;
+		}
+		
+		$("#searchResult").html("Around " + results.numresults + " results found for <b>" + _keywords + "</b><br><br>");
+		
+		//$("#output").html(html)
+		
+		//store the number of results 
+		logNumResults(results.numresults, results.numresults)
+
+		//TODO test if we do indeed skip the first x if we do ?from=x
+		if (results.numresults > _resultsPerPage)
+		{
+			_nextIndex = startIndex + _resultsPerPage;
+			$("#lnkNext").show();
+		}
+		else
+		{
+			$("#lnkNext").hide();
+		}
+		
+		if (_pageNumber > 1)
+		{
+
+
+			TODO
+			_prevIndex = response.queries.previousPage[0].startIndex;
+			$("#lnkPrev").show();
+		}
+		else
+		{
+			$("#lnkPrev").hide();
+		}
+		
+		if (_pageNumber > 1){
+			$("#lblPageNumber").show().html(_pageNumber);
+		}
+		else{
+			$("#lblPageNumber").hide();
+		}
+		
+		for (var i = 0; i < results.numresults; i++){
+			var item = results.hits[i];
+			var title = item.title;
+        
+			html += "<p><a class='searchLink' href='" + item.url + "'> " + title + "</a><br>";//<i>" + item.url + "</i><br>
+			//if we recognise pdf/word, add a date
+	//		snippetdate = item.pagemap.metatags[0].creationdate
+//			console.log(snippetdate)
+		//	console.log('snip')
+		//	if(typeof(snippetdate) != 'undefined')
+		//		html += snippetdate.substring(8, 10) + " " + snippetdate.substring(6,8) + " " + snippetdate.substring(2,6) + ' .. '
+			
+			html += item.preview + "<p>";
+			//html += item.link + "<br>"// + " - <a href='http://www.google.com/search?q=cache:"+	item.cacheId+":"+item.displayLink+"'>Cached</a>";
+			html += "</p><p>";
+		}
+		
 	}
 	else{
 		console.log('te')
