@@ -3,7 +3,7 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch()
 
 #query on the html field using the keyword 'ouderen'
-res = es.search(index="sites3", body=
+res = es.search(index="23-12-sites", body=
 	{ "query": 
 		{"match": 
 			{"html": "ouderen"}

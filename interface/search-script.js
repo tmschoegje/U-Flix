@@ -3,6 +3,8 @@ var _nextIndex = 0;
 var _resultsPerPage = 10;
 var _pageNumber = 1;
 var _keywords = ""
+//this one's a hacky solution for the elastic one only atm. easier than figuring otu dsl syntax for from in elastic
+var _curIndex = 0;
 
 $(function ()
 {
@@ -12,11 +14,10 @@ $(function ()
 });
 
 
-var _engine = "g"
+var _engine = "se"
 function Search(term, engine, direction)
 {
-	
-	var startIndex = 1;
+	var startIndex = 1; //might have to be 1 for google, 0 for elastic?
 
 	if (direction === -1)
 	{
@@ -33,6 +34,9 @@ function Search(term, engine, direction)
 		startIndex = 1; 
 		_pageNumber = 1;
 	}	
+	
+	_curIndex = startIndex
+
 	//if google.. 
 	if(engine == "g" || engine == "g2"){
 		//THIS WAS FOR ORIS VERSION we want to query using google, but for fair comparison we first call ORIS: both for similar time delay, and to compare an even number of results
@@ -43,7 +47,7 @@ function Search(term, engine, direction)
 		if(engine == "g2")
 			searchKey = mGoogleCustomSearchKeyiBabs
 		var url = "https://www.googleapis.com/customsearch/v1?key="
-		+ mGoogleApiKey + "&num=" + _resultsPerPage + "&cx=" + searchKey + "&start=" + startIndex + "&q=" + escape(term) + "&gl=NL&callback=?";
+		+ mGoogleApiKey + "&num=" + _resultsPerPage + "&cx=" + searchKey + "&start=" + startIndex + "&q=" + escape(term) + "&gl=NL&callback=?"; //TODO: test if it should be startind-1
 		
 			
 
@@ -53,7 +57,7 @@ function Search(term, engine, direction)
 	else if(engine == "poc"){
 		console.log("Before the PoC call")
 		_engine = "poc"
-		var url = "http://localhost:8000/queryme" + "?query=" + escape(term)
+		var url = "http://localhost:8000/queryme" + "?query=" + escape(term) + "&start=" + startIndex
 	}
 	//deprecated: sort by relevancy using oris
 	else{
@@ -136,7 +140,7 @@ function parseiBabs(events, keywords){
 
 function SearchCompleted(response)
 {
-	console.log('hi')
+	//console.log('hi')
 	//getPreview("Hello, how is it going. This is the bus we have to take!", _keywords);
 	console.log('search completed')
 	console.log(_engine)
@@ -159,6 +163,7 @@ function SearchCompleted(response)
 			return;
 		}
 
+		
 		$("#searchResult").html("Around " + response.queries.request[0].totalResults + " pages found for <b>" +response.queries.request[0].searchTerms+ "</b><br><br>");
 		
 		//store the number of results 
@@ -230,10 +235,14 @@ function SearchCompleted(response)
 		//store the number of results 
 		logNumResults(results.numresults, results.numresults)
 
-		//TODO test if we do indeed skip the first x if we do ?from=x
+		//TODO not working, because &from is not parsed as a thing different from a query
+		//-> do we ever need it for our usecase?
+		//	 supposed to skip ahead if we do indeed skip the first x if we do ?from=x
+		//console.log(from)
+		console.log('milestone')
 		if (results.numresults > _resultsPerPage)
 		{
-			_nextIndex = startIndex + _resultsPerPage;
+			_nextIndex = _curIndex + _resultsPerPage;
 			$("#lnkNext").show();
 		}
 		else
@@ -245,8 +254,8 @@ function SearchCompleted(response)
 		{
 
 
-			TODO
-			_prevIndex = response.queries.previousPage[0].startIndex;
+	//		TODO
+			_prevIndex = _curIndex - _resultsPerPage;//response.queries.previousPage[0].startIndex;
 			$("#lnkPrev").show();
 		}
 		else
@@ -261,8 +270,11 @@ function SearchCompleted(response)
 			$("#lblPageNumber").hide();
 		}
 		
-		for (var i = 0; i < results.numresults; i++){
+		//console.log(results.hits)
+		//console.log(results.numresults)
+		for (var i = 0; i < results.numresults && i < _resultsPerPage; i++){
 			var item = results.hits[i];
+			//console.log(item.url)
 			var title = item.title;
         
 			html += "<p><a class='searchLink' href='" + item.url + "'> " + title + "</a><br>";//<i>" + item.url + "</i><br>

@@ -1,52 +1,49 @@
 # This is a modified copy of \elastic\query.py
 
-#HTML stripping code
-
-from html.parser import HTMLParser
-import re
-import time
-
-class MLStripper(HTMLParser):
-    def __init__(self):
-        self.reset()
-        self.strict = False
-        self.convert_charrefs= True
-        self.fed = []
-    def handle_data(self, d):
-        self.fed.append(d)
-    def get_data(self):
-        return ''.join(self.fed)
-
-def strip_tags(html):
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
-
-
 #Start query code
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.query import MultiMatch
 from elasticsearch_dsl import Search
 from nltk import tokenize
+from nltk.stem import PorterStemmer 
+from nltk.stem.snowball import SnowballStemmer
 
 es = Elasticsearch()
-s = Search(using=es, index='sites3')
+ps = PorterStemmer() 
+ss = SnowballStemmer("dutch", ignore_stopwords=True)
+indexName='24-12-urls-sites'
+#s = Search(using=es, index='sites3')
 
-def qry(q):
-	return jsonResultsURL(query(q),q)
+def qry(q, start=1):
+#	print('START HERE')
+#	print(start)
+	return jsonResultsURL(query(q, start),q)
 
-def query(q):
+def query(q, start=0):
+	#how many results per page
+	size = 10
+	
+	#stemming query terms
+	splitq = q.split(" ")
+	newq = ""
+	for qterm in splitq:
+		newq += ss.stem(qterm) + " "
+		
+	print(q)
+	print(newq)
+	
 	if len(q) > 0:
-		s = Search(using=es, index='sites3').query("multi_match", query =q, fields = ["title", "url", "html"])
+		s = Search(using=es, index=indexName).query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])
+		s2 = s[int(start):int(start)+size]
 		#s.query(MultiMatch(query=q, fields=['title,', 'url', 'html']))
-		response = s.execute()
+		response = s2.execute()
 #	for hit in response:
 #		print(hit)
 	#.to_dict()
 		return response
 	return 'No query'
 
-#TODO character limit
+#TODO smarter document surrogate/preview here
 def firstSentence(fulltext, q):
 
 	lowlimit = 20
@@ -77,7 +74,7 @@ def firstSentence(fulltext, q):
 						returnsent += ".. "
 					if not (len(splitsent) < index + highlimit):
 						returnsentend += " .."
-					return returnsent + " ".join(splitsent[index - lowlimit:index + highlimit]) + returnsentend
+					return returnsent + " ".join(splitsent[index - lowlimit:index]) + ' <b>' + splitsent[index] + '</b> ' + " ".join(splitsent[index + 1:index + highlimit]) + returnsentend
 				
 #		if (q.split(" ")[0] in sentence):
 #			return sentence
@@ -105,6 +102,8 @@ def firstSentence(fulltext, q):
 #			return re.sub(" +", " ", sentence)
 #	return 'No preview'
 
+
+#This one is for testing stuff on the webserver!
 def stringResultsURL(response, q):
 	res = "> " + q + "\n"
 	#Test if there are results
@@ -122,10 +121,12 @@ def stringResultsURL(response, q):
 #		print(hit['url'])
 		#strip the html content
 #		print(firstSentence(strip_tags(hit['html']), q))
-			res += firstSentence(strip_tags(hit['html']), q) + '\n\n'
+			res += firstSentence(hit['markdownbody'], q) + '\n\n'  #from nltk import tokenize(hit
 	return res
 
+#This one is claled by the interface!
 def jsonResultsURL(response, q):
+	
 	res = {
 		'query': q,#"> " + q + "\n"
 		'hits': [],
@@ -144,10 +145,11 @@ def jsonResultsURL(response, q):
 			res['hits'].append({
 				'title':hit['title'],
 				'url':hit['url'],
-				'preview': firstSentence(strip_tags(hit['html']), q),
-				'html':hit['html']
+				'preview': firstSentence(hit['markdownbody'], q),#strip_tags(
+				'markdownbody':hit['markdownbody']
 			})
-		res['numresults'] = len(response)
+		#print(response)
+		res['numresults'] = response.hits.total.value#len(response)
 			
 #		print(hit['title'])
 #		print(hit['url'])
@@ -176,14 +178,14 @@ def printResultsURL(response, q):
 #		print(res['hits'][i]['_score'])
 #		print(firstSentence(tokenize.sent_tokenize(strip_tags(res['hits'][i]['_source']['html'])), q))
 
-q = 'tivoli'
-printResultsURL(query(q), q)
+#q = 'tivoli'
+#printResultsURL(query(q), q)
 
-q = 'utrecht'
-printResultsURL(query(q), q)
+#q = 'utrecht'
+#printResultsURL(query(q), q)
 
-q = 'ouderen'
-printResultsURL(query(q), q)
+#q = 'ouderen'
+#printResultsURL(query(q), q)
 
 
 
