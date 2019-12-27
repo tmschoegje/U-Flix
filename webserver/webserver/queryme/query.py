@@ -1,5 +1,8 @@
 # This is a modified copy of \elastic\query.py
 
+# now also playing around with these instructions for a BERT/elastic combo
+# https://towardsdatascience.com/elasticsearch-meets-bert-building-search-engine-with-elasticsearch-and-bert-9e74bf5b4cf2
+
 #Start query code
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.query import MultiMatch
@@ -7,11 +10,15 @@ from elasticsearch_dsl import Search
 from nltk import tokenize
 from nltk.stem import PorterStemmer 
 from nltk.stem.snowball import SnowballStemmer
+#from bert_serving.client import BertClient
 
 es = Elasticsearch()
 ps = PorterStemmer() 
 ss = SnowballStemmer("dutch", ignore_stopwords=True)
 indexName='24-12-urls-sites'
+#indexName="25-12-sites"
+#bc = BertClient(output_fmt='list')
+
 #s = Search(using=es, index='sites3')
 
 def qry(q, start=1):
@@ -19,21 +26,31 @@ def qry(q, start=1):
 #	print(start)
 	return jsonResultsURL(query(q, start),q)
 
+#Currently not stemming - e.g. 'eenzaam' would be stemmed and give no results
+#Should probably query, and then re-query with stemming
+#I think elastic has some stemming function too. Or maybe during indexing already stem all words?
+def stemm(q):
+	splitq = q.split(" ")
+	newq = ""
+	for qterm in splitq:
+		newq += ss.stem(qterm) + " "
+	return q#newq
+
 def query(q, start=0):
 	#how many results per page
 	size = 10
 	
 	#stemming query terms
-	splitq = q.split(" ")
-	newq = ""
-	for qterm in splitq:
-		newq += ss.stem(qterm) + " "
+	newq = stemm(q)
 		
 	print(q)
 	print(newq)
 	
 	if len(q) > 0:
+		#emb = 24#bc.encode(q)
 		s = Search(using=es, index=indexName).query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])
+		#s = Search(using=es, index=indexName).query("multi_match", query = "").script(source=cosineSimilarity(params.queryVector, doc['embedding'])).params(queryVector=emb)#, params = "queryVector":emb
+		#, script = {			"source":"cosineSimilarity(params.queryVector, doc['embedding'])",			"params": {"queryVector":emb}			})
 		s2 = s[int(start):int(start)+size]
 		#s.query(MultiMatch(query=q, fields=['title,', 'url', 'html']))
 		response = s2.execute()
@@ -53,21 +70,26 @@ def firstSentence(fulltext, q):
 	# and all query terms
 	sentences = tokenize.sent_tokenize(fulltext)
 	
-	# kind of ugly way to see if all keywords are in this sentence..
+	# kind of ugly way to see if a keywords is in this sentence..
 	for sentence in sentences:
-		keywords = q.split(" ")
+		#highlight all regular words, or stemmed words
+		keywords = q.split(" ")+ stemm(q).split(" ")[0:-1]  #remove trailing space
+		#print(keywords)
+		
 		hits = 0
 		for keyword in keywords:
 			if keyword in sentence:
 				hits += 1
-		if hits == len(keywords):
+		if hits > 0:#== len(keywords):   Could test if all keywords are in the sentence
 			# we're going to return this sentence. return the keywords,
 			# the words in front and behind
 			splitsent = sentence.split(" ")
+			
+			#possible TODO: first check if there's an unstemmed match - else find a stemmed match
 			returnsent = ""
 			returnsentend = ""
 			for index, word in enumerate(splitsent):
-				if word == keywords[0]:
+				if word in keywords:
 					if index < lowlimit:
 						lowlimit = index
 					else:

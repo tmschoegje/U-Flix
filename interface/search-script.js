@@ -228,7 +228,7 @@ function SearchCompleted(response)
 			return;
 		}
 		
-		$("#searchResult").html("Around " + results.numresults + " results found for <b>" + _keywords + "</b><br><br>");
+		$("#searchResult").html("Around " + results.numresults + " results found for <b>" + _keywords.join(" ") + "</b><br><br>");
 		
 		//$("#output").html(html)
 		
