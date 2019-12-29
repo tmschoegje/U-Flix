@@ -15,8 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from queryme import views
+#from .query import qry
 
 urlpatterns = [
+	path('queryme/search/', views.search),
+	path('queryme/recommend', views.recommend),
 	path('queryme', include('queryme.urls')),
     path('admin/', admin.site.urls),
 ]

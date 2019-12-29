@@ -6,7 +6,7 @@
 #Start query code
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.query import MultiMatch
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, Q
 from nltk import tokenize
 from nltk.stem import PorterStemmer 
 from nltk.stem.snowball import SnowballStemmer
@@ -35,6 +35,32 @@ def stemm(q):
 	for qterm in splitq:
 		newq += ss.stem(qterm) + " "
 	return q#newq
+
+def mlt(q, size=3):
+	print('more like this ' + str(q))
+	#stemming query terms
+	newq = stemm(q)
+	
+	if len(q) > 0:
+		s = Search(using=es, index=indexName)
+		s = s.query(Q({"more_like_this": { 
+			"fields": ["markdownbody"],
+			"like":{
+				"_index":indexName,
+				"_id":q
+			}}}))[0:int(size)]
+		response = s.execute()
+		print(response)
+		#if this set is empty, it just kinda breaks
+		#if(len(response) < 1):
+		#	return "{ 'results':'empty'} "
+		return jsonResultsURL(response, q)
+	return "{'results': { 'numresults': 1, 'hits': {'title': 'No query'}}}"
+
+#todo pseudocode for when we added the 'domain' and manual 'domaintitle' facets
+#INTERFACE todo: adjust preview to show domaintitle per document. Remove More Like This from initial results. Add 'explore site' button below.
+#WEBSERVER todo: perform query within this same domain. also add url routing/view
+#INTERFACE todo: after loading initial results, add top 3 results below. let those have 'more like this' as working now. update numresults per domain
 
 def query(q, start=0):
 	#how many results per page
@@ -148,7 +174,6 @@ def stringResultsURL(response, q):
 
 #This one is claled by the interface!
 def jsonResultsURL(response, q):
-	
 	res = {
 		'query': q,#"> " + q + "\n"
 		'hits': [],
@@ -157,18 +182,25 @@ def jsonResultsURL(response, q):
 	if len(response) == 0:
 		res['numresults'] = '0 results\n\n'
 	else:
+#		print()
+#		response_dict = json.loads(response.content)
+#		for key, v in response_dict:
+#			print(key)
 		for hit in response:
+#			print()
+#			print(test)
 			#print('NEWRESULT')
 			#print()
-			#print(hit)
 			#breakpoint()
+			#print(hit.meta['id'])
 #			res += hit['title'] + '\n'
 #			res += hit['url'] + '\n'
 			res['hits'].append({
 				'title':hit['title'],
 				'url':hit['url'],
 				'preview': firstSentence(hit['markdownbody'], q),#strip_tags(
-				'markdownbody':hit['markdownbody']
+				'markdownbody':hit['markdownbody'],
+				'docid':hit.meta['id']
 			})
 		#print(response)
 		res['numresults'] = response.hits.total.value#len(response)

@@ -57,7 +57,7 @@ function Search(term, engine, direction)
 	else if(engine == "poc"){
 		console.log("Before the PoC call")
 		_engine = "poc"
-		var url = "http://localhost:8000/queryme" + "?query=" + escape(term) + "&start=" + startIndex
+		var url = "http://localhost:8000/queryme/search/" + "?query=" + escape(term) + "&start=" + startIndex
 	}
 	//deprecated: sort by relevancy using oris
 	else{
@@ -276,8 +276,10 @@ function SearchCompleted(response)
 			var item = results.hits[i];
 			//console.log(item.url)
 			var title = item.title;
+			console.log(item)
         
-			html += "<p><a class='searchLink' href='" + item.url + "'> " + title + "</a><br>";//<i>" + item.url + "</i><br>
+			html += "<p><a class='searchLink' href='" + item.url + "' id='" + item.docid + "'> " + title + "</a>&nbsp;&nbsp;&nbsp;<a class='mlt'>More like this!</a><br>";
+			//<i>" + item.url + "</i><br>
 			//if we recognise pdf/word, add a date
 	//		snippetdate = item.pagemap.metatags[0].creationdate
 //			console.log(snippetdate)
@@ -285,10 +287,11 @@ function SearchCompleted(response)
 		//	if(typeof(snippetdate) != 'undefined')
 		//		html += snippetdate.substring(8, 10) + " " + snippetdate.substring(6,8) + " " + snippetdate.substring(2,6) + ' .. '
 			
-			html += item.preview + "<p>";
+			html += item.preview;
 			//html += item.link + "<br>"// + " - <a href='http://www.google.com/search?q=cache:"+	item.cacheId+":"+item.displayLink+"'>Cached</a>";
-			html += "</p><p>";
+			html += "<hr>";
 		}
+		
 		
 	}
 	else{
@@ -361,6 +364,8 @@ function SearchCompleted(response)
 		
 	}
 	$("#output").html(html)
+	
+	bindClicks();
 }
 
 function logNumResults(nr,nd){
@@ -385,6 +390,40 @@ function logNumResults(nr,nd){
 	localStorage.set(contentToStore);
 }*/
 
+// Called when html objects for the results are created using the elastic search (other searches dont create the objects)
+// call morelikethis function, append top 3 to this result
+function bindClicks(){
+	console.log('check')
+	//more like this button
+	$(".mlt" ).click(function() {
+		//alert($(this).parent() + " clicked");
+		console.log($(this).parent() + " clicked");
+		html = "<br><br>"
+		htmlreference = $(this)
+		
+		//Do Elastic mlt query with size 3 for more documents like this
+		$.ajax({url: "http://localhost:8000/queryme/recommend" + "?query=" + escape($(this).parent().children("a.searchLink").attr("id")) + "&size=3", success: function(results){
+			results = results.results
+			console.log(results.numresults)
+			console.log(results.hits)
+			for (var i = 0; results.numresults > 0 && i < results.hits.length; i++){
+				var item = results.hits[i];
+				var title = item.title;
+        
+				html += "<p>&nbsp;* <a class='searchLink2' href='" + item.url + "'>" + title + "</a><br>";
+				html += item.preview + "<p><p>";
+			}
+			//html+= "<hr>";
+//			$("#div1").html(result);
+			console.log(html)
+			console.log($(this).parent())
+			htmlreference.parent().append(html)
+
+		}});
+		
+	});
+}
+
 function onInstalledNotification(details) {
 	//We should store the # results in localstorage.
 		//On page start: check if logs already exist
@@ -403,5 +442,4 @@ function onInstalledNotification(details) {
 	}
 	//})
 }
-
 onInstalledNotification();
