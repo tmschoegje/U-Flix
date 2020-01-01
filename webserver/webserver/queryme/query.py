@@ -36,6 +36,7 @@ def stemm(q):
 		newq += ss.stem(qterm) + " "
 	return q.lower()#newq
 
+#more like this - q = id of document
 def mlt(q, size=3):
 	print('more like this ' + str(q))
 	#stemming query terms
@@ -56,6 +57,19 @@ def mlt(q, size=3):
 		#	return "{ 'results':'empty'} "
 		return jsonResultsURL(response, q)
 	return "{'results': { 'numresults': 1, 'hits': {'title': 'No query'}}}"
+	
+	
+#more from domain
+def mfd(q, domainurl, size=4):
+	print('more from here ' + str(domainurl))
+	#stemming query terms
+	newq = stemm(q)
+	
+	s = Search(using=es, index=indexName).filter('term', domain=domainurl).query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])[1:int(size)]
+	response = s.execute()
+	print(response)
+	return jsonResultsURL(response, q)
+	
 
 #todo pseudocode for when we added the 'domain' and manual 'domaintitle' facets
 #INTERFACE todo: adjust preview to show domaintitle per document. Remove More Like This from initial results. Add 'explore site' button below.

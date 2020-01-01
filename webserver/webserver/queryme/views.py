@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from .query import qry
 from .query import mlt
+from .query import mfd
 
 # Create your views here.
 def index(request):
@@ -20,3 +21,9 @@ def recommend(request):
 	query = request.GET.get('query', '')
 	size = request.GET.get('size', '')
 	return JsonResponse({'results': mlt(query, size)})
+	
+def domainsearch(request):
+	query = request.GET.get('query', '')
+	size = request.GET.get('size', '')
+	domain = request.GET.get('domain', '')
+	return JsonResponse({'results': mfd(query, domain, size)})

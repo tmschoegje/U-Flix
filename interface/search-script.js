@@ -278,7 +278,7 @@ function SearchCompleted(response)
 			var title = item.title;
 			console.log(item)
         
-			html += "<p><a class='searchLink' href='" + item.url + "' id='" + item.docid + "'> " + title + "</a>&nbsp;&nbsp;&nbsp;<a class='mlt'>More like this!</a><br>";
+			html += "<p><a class='searchLink' href='" + item.url + "' id='" + item.docid + "'> " + title + "</a>&nbsp;&nbsp;&nbsp;<a class='mlt'>More like this</a><br>";
 //			html += "<p><a class='searchLink' href='" + item.url + "' id='" + item.docid + "'> " + title + "</a>&nbsp;&nbsp;&nbsp;<a class='mlt'>More like this!</a><br>";
 			//<i>" + item.url + "</i><br>
 			//if we recognise pdf/word, add a date
@@ -290,7 +290,7 @@ function SearchCompleted(response)
 			
 			html += item.preview;
 			//html += item.link + "<br>"// + " - <a href='http://www.google.com/search?q=cache:"+	item.cacheId+":"+item.displayLink+"'>Cached</a>";
-			html += "<br><a href='" + item.domain + "'>" + item.domain.replace('www.','') + "</a><hr>";
+			html += "<br><a class='mfd' domain='" + item.domain + "'>More from " + item.domain.replace('www.','') + "</a><hr>";
 		}
 		
 		
@@ -411,6 +411,34 @@ function bindClicks(){
 				var item = results.hits[i];
 				var title = item.title;
         
+				html += "<p>&nbsp;* <a class='searchLink3' href='" + item.url + "'>" + title + "</a><br>";
+				html += item.preview + "<p><p>";
+			}
+			//html+= "<hr>";
+//			$("#div1").html(result);
+			console.log(html)
+			console.log($(this).parent())
+			htmlreference.parent().append(html)
+
+		}});
+		
+	});
+	
+	//more from domain button
+	$(".mfd" ).click(function() {
+		console.log($(this).parent() + " clicked");
+		html = "<br><br>"
+		htmlreference = $(this)
+		
+		//Do Elastic query within domain with size 4 (= skip first result, which we already see)
+		$.ajax({url: "http://localhost:8000/queryme/domainsearch" + "?query=" + escape(_keywords) + "&size=4&domain=" + htmlreference.attr('domain'), success: function(results){
+			results = results.results
+			console.log(results.numresults)
+			console.log(results.hits)
+			for (var i = 0; results.numresults > 0 && i < results.hits.length; i++){
+				var item = results.hits[i];
+				var title = item.title;
+        
 				html += "<p>&nbsp;* <a class='searchLink2' href='" + item.url + "'>" + title + "</a><br>";
 				html += item.preview + "<p><p>";
 			}
@@ -423,6 +451,8 @@ function bindClicks(){
 		}});
 		
 	});
+	
+	
 }
 
 function onInstalledNotification(details) {
