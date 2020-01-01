@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from .query import qry
 from .query import mlt
 from .query import mfd
+from .query import setTheme
 
 # Create your views here.
 def index(request):
@@ -27,3 +28,7 @@ def domainsearch(request):
 	size = request.GET.get('size', '')
 	domain = request.GET.get('domain', '')
 	return JsonResponse({'results': mfd(query, domain, size)})
+	
+def theme(request):
+	themeid = request.GET.get('theme', '')
+	return JsonResponse({'results': setTheme(themeid)})

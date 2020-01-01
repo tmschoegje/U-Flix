@@ -22,6 +22,7 @@ urlpatterns = [
 	path('queryme/search/', views.search),
 	path('queryme/recommend', views.recommend),
 	path('queryme/domainsearch', views.domainsearch),
+	path('queryme/theme', views.theme),
 	path('queryme', include('queryme.urls')),
     path('admin/', admin.site.urls),
 ]

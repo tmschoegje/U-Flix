@@ -471,6 +471,19 @@ function onInstalledNotification(details) {
 		console.log('loading numresults')
 		numresults = numresultsQ;
 	}
+	
+	//Selects all (i.e. the only) values selected
+	$( "#theme" ).change(function() {
+		var themec = "";
+		$( "select option:selected" ).each(function() {
+			themec += $( this ).val() + " ";
+		});
+		console.log(themec);
+		//Tell server to filter on theme, then call search
+		$.ajax({url: "http://localhost:8000/queryme/theme" + "?theme=" + themec, success: function(results){
+			Search($("#txtSearchTerm").val(), $("#engine").val(), 0)
+		}});
+	}).trigger( "change" );
 	//})
 }
 onInstalledNotification();

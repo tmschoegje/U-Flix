@@ -16,6 +16,7 @@ es = Elasticsearch()
 ps = PorterStemmer() 
 ss = SnowballStemmer("dutch", ignore_stopwords=True)
 indexName='01-01-sites'
+themeid=''
 #indexName="25-12-sites"
 #bc = BertClient(output_fmt='list')
 
@@ -69,7 +70,11 @@ def mfd(q, domainurl, size=4):
 	response = s.execute()
 	print(response)
 	return jsonResultsURL(response, q)
-	
+
+def setTheme(themeidin):
+	global themeid
+	print('Changing theme to ' + themeidin)
+	themeid = themeidin
 
 #todo pseudocode for when we added the 'domain' and manual 'domaintitle' facets
 #INTERFACE todo: adjust preview to show domaintitle per document. Remove More Like This from initial results. Add 'explore site' button below.
@@ -94,10 +99,15 @@ def query(q, start=0):
 	# Lets make an aggregation
 	# 'by_house' is a name you choose, 'terms' is a keyword for the type of aggregator
 	# 'field' is also a keyword, and 'house_number' is a field in our ES index
-	print('start test')
+	#print('start test')
 	
 	
-	s = Search(using=es, index=indexName).query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])
+	
+	s = Search(using=es, index=indexName)
+	if(len(themeid) == 1):
+		#print('Going to filter with theme ' + str(themeid))
+		s = s.filter('term', theme=int(themeid))
+	s = s.query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])
 	
 #	s = Search(using=es, index=indexName, )
 	
@@ -116,8 +126,9 @@ def query(q, start=0):
 	s2 = s[int(start):int(start)+size]
 	#s.query(MultiMatch(query=q, fields=['title,', 'url', 'html']))
 	response = s2.execute()
-#	for hit in response:
-#		print(hit)
+	
+	for hit in response:
+		print(hit.theme)
 	#.to_dict()
 	
 	
