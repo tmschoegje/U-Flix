@@ -17,7 +17,9 @@
 import os
 import sys
 import re 
+from annotatetheme import annotatecontent
 #import bigjson
+from urllib.parse import urlparse
 
 
 
@@ -34,13 +36,19 @@ import re
 #copy.write("\n")
 
 
+
+
+
+
+
+
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from pathlib import Path
 import json
 from time import sleep
 
-indexName = '24-12-urls-sites'
+indexName = '01-01-sites'
 indexFile = '23-12-2-sites.json'
 
 print(Path.cwd())
@@ -78,7 +86,9 @@ def gendata():
 						"keywords":jsline['doc']['keywords'],
 						"markdownbody":jsline['doc']['markdownbody'],
 						"html":jsline['doc']['html'],
-						"urls":jsline['doc']['urls']
+						"urls":jsline['doc']['urls'],
+						"theme":annotatecontent(jsline['doc']['markdownbody']),
+						"domain":urlparse(jsline['doc']['url']).netloc
 					}
 				}
 				i+=1
