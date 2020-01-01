@@ -279,6 +279,7 @@ function SearchCompleted(response)
 			console.log(item)
         
 			html += "<p><a class='searchLink' href='" + item.url + "' id='" + item.docid + "'> " + title + "</a>&nbsp;&nbsp;&nbsp;<a class='mlt'>More like this!</a><br>";
+//			html += "<p><a class='searchLink' href='" + item.url + "' id='" + item.docid + "'> " + title + "</a>&nbsp;&nbsp;&nbsp;<a class='mlt'>More like this!</a><br>";
 			//<i>" + item.url + "</i><br>
 			//if we recognise pdf/word, add a date
 	//		snippetdate = item.pagemap.metatags[0].creationdate
@@ -289,7 +290,7 @@ function SearchCompleted(response)
 			
 			html += item.preview;
 			//html += item.link + "<br>"// + " - <a href='http://www.google.com/search?q=cache:"+	item.cacheId+":"+item.displayLink+"'>Cached</a>";
-			html += "<hr>";
+			html += "<br><a href='" + item.domain + "'>" + item.domain.replace('www.','') + "</a><hr>";
 		}
 		
 		

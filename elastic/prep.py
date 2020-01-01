@@ -88,7 +88,10 @@ def gendata():
 						"html":jsline['doc']['html'],
 						"urls":jsline['doc']['urls'],
 						"theme":annotatecontent(jsline['doc']['markdownbody']),
-						"domain":urlparse(jsline['doc']['url']).netloc
+						"domain": urlparse(jsline['doc']['url']).netloc#{
+						#	"_type": "keywords",
+						#	"_source": urlparse(jsline['doc']['url']).netloc
+						#}
 					}
 				}
 				i+=1

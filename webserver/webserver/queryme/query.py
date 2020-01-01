@@ -15,7 +15,7 @@ from nltk.stem.snowball import SnowballStemmer
 es = Elasticsearch()
 ps = PorterStemmer() 
 ss = SnowballStemmer("dutch", ignore_stopwords=True)
-indexName='24-12-urls-sites'
+indexName='01-01-sites'
 #indexName="25-12-sites"
 #bc = BertClient(output_fmt='list')
 
@@ -34,7 +34,7 @@ def stemm(q):
 	newq = ""
 	for qterm in splitq:
 		newq += ss.stem(qterm) + " "
-	return q#newq
+	return q.lower()#newq
 
 def mlt(q, size=3):
 	print('more like this ' + str(q))
@@ -72,19 +72,52 @@ def query(q, start=0):
 	print(q)
 	print(newq)
 	
-	if len(q) > 0:
-		#emb = 24#bc.encode(q)
-		s = Search(using=es, index=indexName).query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])
-		#s = Search(using=es, index=indexName).query("multi_match", query = "").script(source=cosineSimilarity(params.queryVector, doc['embedding'])).params(queryVector=emb)#, params = "queryVector":emb
-		#, script = {			"source":"cosineSimilarity(params.queryVector, doc['embedding'])",			"params": {"queryVector":emb}			})
-		s2 = s[int(start):int(start)+size]
-		#s.query(MultiMatch(query=q, fields=['title,', 'url', 'html']))
-		response = s2.execute()
+	#if there's no query, query on a space (get all)
+	if len(q) == 0:
+		newq = "de het een"
+	#emb = 24#bc.encode(q)
+	
+	# Lets make an aggregation
+	# 'by_house' is a name you choose, 'terms' is a keyword for the type of aggregator
+	# 'field' is also a keyword, and 'house_number' is a field in our ES index
+	print('start test')
+	
+	
+	s = Search(using=es, index=indexName).query("multi_match", query = newq, fields = ["title", "url", "markdownbody"])
+	
+#	s = Search(using=es, index=indexName, )
+	
+	#size 0 = search all domains
+	#s.aggs.bucket('by_domain', 'terms', field='domain.keyword', size=10)
+	#s.execute()
+	
+	#print(s.aggregations.by_domain.doc_count)
+	#print(s.hits.total)
+	#print(s.aggregations.by_domain.buckets)
+	
+	#s = Search(using=es, index=indexName).query("multi_match", query = "").script(source=cosineSimilarity(params.queryVector, doc['embedding'])).params(queryVector=emb)#, params = "queryVector":emb
+	#, script = {			"source":"cosineSimilarity(params.queryVector, doc['embedding'])",			"params": {"queryVector":emb}			})
+	
+	
+	s2 = s[int(start):int(start)+size]
+	#s.query(MultiMatch(query=q, fields=['title,', 'url', 'html']))
+	response = s2.execute()
 #	for hit in response:
 #		print(hit)
 	#.to_dict()
-		return response
-	return 'No query'
+	
+	
+	#print(response.aggregations.by_domain.buckets[0])
+	#for item in response.aggregations.by_domain.buckets:
+	#	print(item.key)
+	#	print(item.doc_count)
+	#print(response)
+	#print(response[0]['domain'])
+	#print(response[8]['domain'])
+#	print(response[2])
+#	print(response[3])
+	return response
+#	return 'No query'
 
 #TODO smarter document surrogate/preview here
 def firstSentence(fulltext, q):
@@ -98,8 +131,9 @@ def firstSentence(fulltext, q):
 	
 	# kind of ugly way to see if a keywords is in this sentence..
 	for sentence in sentences:
+		sentence = sentence.lower()
 		#highlight all regular words, or stemmed words
-		keywords = q.split(" ")+ stemm(q).split(" ")[0:-1]  #remove trailing space
+		keywords = q.lower().split(" ")+stemm(q).lower().split(" ")[0:-1]  #remove trailing space
 		#print(keywords)
 		
 		hits = 0
@@ -179,6 +213,8 @@ def jsonResultsURL(response, q):
 		'hits': [],
 		}
 	#Test if there are results
+	#if(response == 'No query'):
+	#print(response)
 	if len(response) == 0:
 		res['numresults'] = '0 results\n\n'
 	else:
@@ -200,7 +236,9 @@ def jsonResultsURL(response, q):
 				'url':hit['url'],
 				'preview': firstSentence(hit['markdownbody'], q),#strip_tags(
 				'markdownbody':hit['markdownbody'],
-				'docid':hit.meta['id']
+				'docid':hit.meta['id'],
+				'domain':hit['domain'],
+				'theme':hit['theme']
 			})
 		#print(response)
 		res['numresults'] = response.hits.total.value#len(response)

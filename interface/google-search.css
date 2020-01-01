@@ -39,11 +39,15 @@
 	font-weight:bold;
 	color: #00A7E8;
 }
+
 #output a.searchLink{
 	font-weight:bold;
 	color: #0079c2;
 }
 #output a.searchLink2{
+	color: #00A7E8;
+}
+#output a.mlt{
 	color: #9999ff;
 }
 
