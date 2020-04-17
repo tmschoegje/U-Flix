@@ -1,4 +1,4 @@
-Playing around with crawling/indexing Utrecht's informative sites using Scrapy and Elastic (very hacky)
+Playing around with crawling/indexing Utrecht's informative sites using Scrapy and Elastic (kinda hacky)
 
 * spider.py for crawling the website
 * prep.py to load the results into elastic
